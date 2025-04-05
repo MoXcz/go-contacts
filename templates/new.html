@@ -1,0 +1,33 @@
+{{ template "layout.html" . }}
+{{ define "title" }}New Contact{{ end }}
+
+{{ define "content" }}
+<form action="/contacts/new" method="post">
+    <fieldset>
+        <legend>Contact Values</legend>
+        <div class="table rows">
+            <p>
+                <label for="firstName">First Name</label>
+                <input name="firstName" id="firstName" type="text" placeholder="First Name">
+            </p>
+            <p>
+                <label for="lastName">Last Name</label>
+                <input name="lastName" id="lastName" type="text" placeholder="Last Name">
+            </p>
+            <p>
+                <label for="phone">Phone</label>
+                <input name="phone" id="phone" type="text" placeholder="Phone">
+            </p>
+            <p>
+                <label for="email">Email</label>
+                <input name="email" id="email" type="text" placeholder="Email">
+            </p>
+        </div>
+        <button>Save</button>
+    </fieldset>
+</form>
+
+<p>
+    <a href="/contacts">Back</a>
+</p>
+{{ end }}

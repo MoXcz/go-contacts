@@ -1,20 +1,16 @@
-{{ define "index" }}
+{{ define "layout" }}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title></title>
+    <title>{{ block "title" . }}{{ end }}</title>
     <link href="/static/style.css" rel="stylesheet">
   </head>
   <body>
-    <header>
-      <h1>There's some head in my header</h1>
-    </header>
 
-    {{ block "contacts" . }}{{ end }}
+    {{ block "content" . }}{{ end }}
 
-    <footer><p>There's some foot in my footer</p></footer>
   </body>
 </html>
 {{ end }}

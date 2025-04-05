@@ -1,13 +1,23 @@
-{{ define "contacts" }}
+{{ template "layout.html" . }}
+{{ define "title" }}Contact List {{ end }}
+
+{{ define "content" }}
+  <header>
+    <h2>Contact List</h2>
+  </header>
+
+  <hr/>
+
   <form action="/contacts" method="get">
     <label for="search">Search Term</label>
     <input id="search" type="search" name="q" value="{{ .SearchTerm }}"/>
-    <input type="submit" value="Search"/>
+    <input type="submit" value="Search" class="input-contact"/>
   </form>
+
   <table>
     <thead>
     <tr>
-      <th>First <th>Last <th>Phone <th>Email <th/>
+      <th>First Name<th>Last Name<th>Phone <th>Email <th>Actions
     </tr>
     </thead>
     <tbody>
@@ -16,7 +26,7 @@
         <td>{{ .FirstName }}</td>
         <td>{{ .LastName }}</td>
         <td>{{ .Email }}</td>
-        <td>{{ .Num }}</td>
+        <td>{{ .Phone }}</td>
         <td>
           <a href="/contacts/{{ .Id }}/edit">Edit</a>
           <a href="/contacts/{{ .Id }}">View</a>
@@ -28,4 +38,6 @@
   <p>
     <a href="/contacts/new">Add Contact</a>
   </p>
+
+  <footer><p>There's some foot in my footer</p></footer>
 {{ end }}
