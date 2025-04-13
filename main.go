@@ -21,9 +21,12 @@ func main() {
 
 	mux.HandleFunc("/", index)
 	mux.HandleFunc("GET /contacts", getContacts)
-	mux.HandleFunc("GET /contacts/new", newContact)
-	mux.HandleFunc("POST /contacts/new", createNewContact)
+	mux.HandleFunc("GET /contacts/new", createNewContactGet)
+	mux.HandleFunc("POST /contacts/new", createNewContactPost)
 	mux.HandleFunc("GET /contacts/{contact_id}", getContact)
+	mux.HandleFunc("GET /contacts/{contact_id}/edit", editContactGet)
+	mux.HandleFunc("POST /contacts/{contact_id}/edit", editContactPost)
+	mux.HandleFunc("POST /contacts/{contact_id}/delete", deleteContact)
 
 	srv := http.Server{
 		Addr:    listenAddr,

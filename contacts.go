@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -61,7 +62,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newContact(w http.ResponseWriter, r *http.Request) {
+func createNewContactGet(w http.ResponseWriter, r *http.Request) {
 	err := renderTemplate(w, "new", nil)
 	if err != nil {
 		fmt.Printf("Error rendering template: %v", err)
@@ -69,7 +70,7 @@ func newContact(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func createNewContact(w http.ResponseWriter, r *http.Request) {
+func createNewContactPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
@@ -139,4 +140,77 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	renderTemplate(w, "view", contact)
+}
+
+func editContactGet(w http.ResponseWriter, r *http.Request) {
+	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	if err != nil {
+		log.Printf("Error parsing contact id: %v", err)
+		return
+	}
+
+	contact, err := getContactByID(contact_id)
+	if err != nil {
+		log.Printf("Error finding contact: %v", err)
+		return
+	}
+	renderTemplate(w, "edit", contact)
+}
+
+func editContactPost(w http.ResponseWriter, r *http.Request) {
+	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	firstName := r.FormValue("firstName")
+	lastName := r.FormValue("lastName")
+	email := r.FormValue("email")
+	phoneNum, err := strconv.Atoi(r.FormValue("phone"))
+	if err != nil {
+		err := renderTemplate(w, "edit", Contact{
+			FirstName: firstName,
+			LastName:  lastName,
+			Phone:     0,
+			Email:     email,
+			Error:     "Invalid phone number",
+			Id:        contact_id,
+		})
+		if err != nil {
+			fmt.Printf("Error rendering template: %v", err)
+			return
+		}
+		return
+	}
+
+	for i, contact := range contacts {
+		if contact.Id == contact_id {
+			contacts[i] = Contact{
+				FirstName: firstName,
+				LastName:  lastName,
+				Phone:     phoneNum,
+				Email:     email,
+				Id:        contact.Id,
+			}
+		}
+	}
+	http.Redirect(w, r, "/contacts/"+contact_id.String(), http.StatusSeeOther)
+}
+
+func deleteContact(w http.ResponseWriter, r *http.Request) {
+	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	if err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	for i, contact := range contacts {
+		if contact.Id == contact_id {
+			contacts = slices.Delete(contacts, i, i+1)
+		}
+	}
+
+	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
 }
