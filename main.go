@@ -23,6 +23,7 @@ func main() {
 	mux.HandleFunc("GET /contacts", getContacts)
 	mux.HandleFunc("GET /contacts/new", newContact)
 	mux.HandleFunc("POST /contacts/new", createNewContact)
+	mux.HandleFunc("GET /contacts/{contact_id}", getContact)
 
 	srv := http.Server{
 		Addr:    listenAddr,
@@ -37,7 +38,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusPermanentRedirect)
 }
 
-func renderTemplate(w http.ResponseWriter, name string, data interface{}) error {
+func renderTemplate(w http.ResponseWriter, name string, data any) error {
 	tmpl, err := template.ParseFiles(
 		"templates/layout.html",
 		fmt.Sprintf("templates/%s.html", name),

@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Contact struct {
@@ -12,7 +16,7 @@ type Contact struct {
 	LastName  string
 	Email     string
 	Phone     int
-	Id        int
+	Id        uuid.UUID
 }
 
 func newContacts() []Contact {
@@ -22,16 +26,13 @@ func newContacts() []Contact {
 	}
 }
 
-var id = 0
-
 func newContactData(firstName, lastName, email string, phone int) Contact {
-	id++
 	return Contact{
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
 		Phone:     phone,
-		Id:        id,
+		Id:        uuid.New(),
 	}
 }
 
@@ -59,7 +60,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 func newContact(w http.ResponseWriter, r *http.Request) {
 	err := renderTemplate(w, "new", nil)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error rendering template: %v", err)
 		return
 	}
 }
@@ -75,6 +76,7 @@ func createNewContact(w http.ResponseWriter, r *http.Request) {
 	lastName := r.FormValue("lastName")
 	email := r.FormValue("email")
 	phone, err := strconv.Atoi(r.FormValue("phone"))
+	// TODO: handle errors of form values
 	if err != nil {
 		http.Error(w, "Invalid phone number", http.StatusBadRequest)
 		return
@@ -97,4 +99,28 @@ func searchContacts(q string, contacts []Contact) []Contact {
 		}
 	}
 	return filteredContacts
+}
+
+func getContactByID(contact_id uuid.UUID) (Contact, error) {
+	for _, contact := range contacts {
+		if contact_id == contact.Id {
+			return contact, nil
+		}
+	}
+	return Contact{}, errors.New("No matches found")
+}
+
+func getContact(w http.ResponseWriter, r *http.Request) {
+	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	if err != nil {
+		log.Printf("Error parsing contact id: %v", err)
+		return
+	}
+
+	contact, err := getContactByID(contact_id)
+	if err != nil {
+		log.Printf("Error finding contact: %v", err)
+		return
+	}
+	renderTemplate(w, "view", contact)
 }
