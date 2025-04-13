@@ -17,7 +17,11 @@ type Contact struct {
 	Email     string
 	Phone     int
 	Id        uuid.UUID
+	Error     string
 }
+
+// map[string][]string
+// "phoneError -> "Invalid phone num"
 
 func newContacts() []Contact {
 	return []Contact{
@@ -75,14 +79,26 @@ func createNewContact(w http.ResponseWriter, r *http.Request) {
 	firstName := r.FormValue("firstName")
 	lastName := r.FormValue("lastName")
 	email := r.FormValue("email")
-	phone, err := strconv.Atoi(r.FormValue("phone"))
-	// TODO: handle errors of form values
+	// TODO: phone := r.FormValue("phone") to preserve state on errors
+	phoneNum, err := strconv.Atoi(r.FormValue("phone"))
 	if err != nil {
-		http.Error(w, "Invalid phone number", http.StatusBadRequest)
+		// use text phone here?
+		err := renderTemplate(w, "new", Contact{
+			FirstName: firstName,
+			LastName:  lastName,
+			Phone:     0,
+			Email:     email,
+			Error:     "Invalid phone number",
+		})
+		// this is really bad <3
+		if err != nil {
+			fmt.Printf("Error rendering template: %v", err)
+			return
+		}
 		return
 	}
 
-	contact := newContactData(firstName, lastName, email, phone)
+	contact := newContactData(firstName, lastName, email, phoneNum)
 	contacts = append(contacts, contact)
 
 	http.Redirect(w, r, "/contacts", http.StatusSeeOther)

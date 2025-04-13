@@ -38,7 +38,7 @@ button {
   width: 100%;
   max-width: 400px;
   box-sizing: border-box;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 6px;
 }
@@ -121,4 +121,12 @@ fieldset {
 legend {
   font-weight: bold;
   padding: 0 0.5rem;
+}
+
+/* Errors */
+.error {
+  color: #d9534f;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
