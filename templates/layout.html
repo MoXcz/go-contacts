@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ block "title" . }}{{ end }}</title>
     <link href="/static/style.css" rel="stylesheet">
+    <script src="/static/js/htmx.js"></script>
   </head>
-  <body>
+  <body hx-boost="true">
 
     {{ block "content" . }}{{ end }}
 
