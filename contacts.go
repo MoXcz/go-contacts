@@ -167,7 +167,10 @@ func editContactPost(w http.ResponseWriter, r *http.Request) {
 
 	for i, c := range contacts {
 		if c.Id == contact_id {
-			contacts[i] = contact
+			contacts[i].FirstName = contact.FirstName
+			contacts[i].LastName = contact.LastName
+			contacts[i].Email = contact.Email
+			contacts[i].Phone = contact.Phone
 		}
 	}
 	http.Redirect(w, r, "/contacts/"+fmt.Sprintf("%d", contact_id), http.StatusSeeOther)
