@@ -9,8 +9,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 type Contact struct {
@@ -18,7 +16,7 @@ type Contact struct {
 	LastName  string
 	Email     string
 	Phone     int
-	Id        uuid.UUID
+	Id        int
 	Errors    map[string]string
 }
 
@@ -30,17 +28,20 @@ func newContacts() []Contact {
 }
 
 func newContactData(firstName, lastName, email string, phone int) Contact {
-	return Contact{
+	c := Contact{
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
 		Phone:     phone,
-		Id:        uuid.New(),
+		Id:        counter,
 		Errors:    map[string]string{},
 	}
+	counter += 1
+	return c
 }
 
 var contacts = newContacts()
+var counter = 0
 
 func getContacts(w http.ResponseWriter, r *http.Request) {
 	c := contacts
@@ -88,7 +89,7 @@ func createNewContactPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContact(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		log.Printf("Error parsing contact id: %v", err)
 		return
@@ -103,7 +104,7 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func editContactGet(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		log.Printf("Error parsing contact id: %v", err)
 		return
@@ -118,7 +119,7 @@ func editContactGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func getEmailValidation(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		log.Printf("Error parsing contact id: %v", err)
 		return
@@ -146,7 +147,7 @@ func getEmailValidation(w http.ResponseWriter, r *http.Request) {
 }
 
 func editContactPost(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		http.Error(w, "Unable to parse contact_id", http.StatusBadRequest)
 		return
@@ -169,11 +170,11 @@ func editContactPost(w http.ResponseWriter, r *http.Request) {
 			contacts[i] = contact
 		}
 	}
-	http.Redirect(w, r, "/contacts/"+contact_id.String(), http.StatusSeeOther)
+	http.Redirect(w, r, "/contacts/"+fmt.Sprintf("%d", contact_id), http.StatusSeeOther)
 }
 
 func deleteContact(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := uuid.Parse(r.PathValue("contact_id"))
+	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
@@ -252,7 +253,7 @@ func searchContacts(q string, contacts []Contact) []Contact {
 	return filteredContacts
 }
 
-func getContactByID(contact_id uuid.UUID) (Contact, error) {
+func getContactByID(contact_id int) (Contact, error) {
 	for _, contact := range contacts {
 		if contact_id == contact.Id {
 			return contact, nil
