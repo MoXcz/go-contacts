@@ -76,7 +76,7 @@ func createNewContactPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contact, err := parseFormContact(w, r)
+	contact, err := parseContactForm(w, r)
 	if err != nil {
 		log.Println(err)
 		return
@@ -158,7 +158,7 @@ func editContactPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contact, err := parseFormContact(w, r)
+	contact, err := parseContactForm(w, r)
 	if err != nil {
 		log.Println(err)
 		return
@@ -188,7 +188,7 @@ func deleteContact(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
 }
 
-func parseFormContact(w http.ResponseWriter, r *http.Request) (Contact, error) {
+func parseContactForm(w http.ResponseWriter, r *http.Request) (Contact, error) {
 	errors := map[string]string{}
 	firstName := r.FormValue("firstName")
 	if firstName == "" {
