@@ -26,6 +26,7 @@ func main() {
 	mux.HandleFunc("GET /contacts/{contact_id}", getContact)
 	mux.HandleFunc("GET /contacts/{contact_id}/edit", editContactGet)
 	mux.HandleFunc("POST /contacts/{contact_id}/edit", editContactPost)
+	mux.HandleFunc("GET /contacts/{contact_id}/email", getEmailValidation)
 	mux.HandleFunc("DELETE /contacts/{contact_id}", deleteContact)
 
 	srv := http.Server{
