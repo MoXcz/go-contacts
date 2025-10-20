@@ -119,31 +119,18 @@ func editContactGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func getEmailValidation(w http.ResponseWriter, r *http.Request) {
-	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
-	if err != nil {
-		log.Printf("Error parsing contact id: %v", err)
-		return
-	}
-
-	contact, err := getContactByID(contact_id)
-	if err != nil {
-		log.Printf("Error finding contact: %v", err)
-		return
-	}
-
-	err = r.ParseForm()
+	msg := ""
+	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
-		return
 	}
 
-	errors := map[string]string{}
 	email := r.FormValue("email")
 	if !isEmailValid(email) {
-		errors["mail"] = "Invalid email"
+		msg = "Invalid email"
 	}
 
-	renderTemplate(w, "edit", contact)
+	w.Write([]byte(msg))
 }
 
 func editContactPost(w http.ResponseWriter, r *http.Request) {

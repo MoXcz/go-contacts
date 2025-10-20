@@ -11,7 +11,7 @@
                     <input name="firstName" id="firstName" type="text" placeholder="First Name"
                            value="{{ .FirstName }}">
                     {{with index .Errors "firstName"}}
-                    <span style="color:red">{{.}}</span>
+                    <span class="error" style="color:red">{{.}}</span>
                     {{end}}
                 </p>
                 <p>
@@ -19,22 +19,26 @@
                     <input name="lastName" id="lastName" type="text" placeholder="Last Name"
                            value="{{ .LastName }}">
                     {{with index .Errors "lastName"}}
-                    <span style="color:red">{{.}}</span>
+                    <span class="error" style="color:red">{{.}}</span>
                     {{end}}
                 </p>
                 <p>
                     <label for="phone">Phone</label>
                     <input name="phone" id="phone" type="text" placeholder="Phone" value="{{ .Phone }}">
                     {{with index .Errors "phone"}}
-                    <span style="color:red">{{.}}</span>
+                    <span class="error" style="color:red">{{.}}</span>
                     {{end}}
                 </p>
                 <p>
                     <label for="email">Email</label>
-                    <input name="email" id="email" type="email" placeholder="Email" value="{{ .Email }}" hx-get="/contacts/{{.Id}}/email" hx-target="next .error">
-                    {{with index .Errors "mail"}}
-                    <span style="color:red">{{.}}</span>
-                    {{end}}
+                    <input name="email" id="email" type="email"
+                      hx-get="/contacts/{{ .Id }}/email"
+                      hx-target="next .error"
+                      placeholder="Email" value="{{ .Email }}">
+                    <span class="error" style="color:red">
+                      {{with index .Errors "email"}}{{.}}{{end}}
+                    </span>
+
                 </p>
             </div>
             <button>Save</button>
