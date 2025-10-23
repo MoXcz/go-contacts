@@ -10,6 +10,7 @@ import (
 type PageData struct {
 	Contacts   []Contact
 	SearchTerm string
+	Page       int
 }
 
 func main() {
@@ -42,11 +43,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusPermanentRedirect)
 }
 
+func add(x, y int) int { return x + y }
+func sub(x, y int) int { return x - y }
+
 func renderTemplate(w http.ResponseWriter, name string, data any) error {
-	tmpl, err := template.ParseFiles(
-		"templates/layout.html",
-		fmt.Sprintf("templates/%s.html", name),
-	)
+	tmpl, err := template.New("templates/layout.html").Funcs(template.FuncMap{
+		"add": add,
+		"sub": sub,
+	}).ParseFiles("templates/layout.html", fmt.Sprintf("templates/%s.html", name))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return fmt.Errorf("Error: Content template not found. %w", err)

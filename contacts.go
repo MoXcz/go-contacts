@@ -50,12 +50,28 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 		c = searchContacts(search, c)
 	}
 
+	page := r.URL.Query().Get("page")
+	pageNum, err := strconv.Atoi(page)
+	if page != "" && err != nil {
+		log.Println("Invalid page number")
+		return
+	}
+
+	if pageNum <= 0 {
+		c = c[:10]
+	} else if (pageNum+1)*10 > len(c) {
+		c = c[pageNum*10:]
+	} else {
+		c = c[pageNum*10 : (pageNum+1)*10]
+	}
+
 	data := PageData{
 		Contacts:   c,
 		SearchTerm: search,
+		Page:       pageNum,
 	}
 
-	err := renderTemplate(w, "contacts", data)
+	err = renderTemplate(w, "contacts", data)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 		return
