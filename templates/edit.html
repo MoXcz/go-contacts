@@ -34,6 +34,7 @@
                     <input name="email" id="email" type="email"
                       hx-get="/contacts/{{ .Id }}/email"
                       hx-target="next .error"
+                      hx-trigger="change, keyup:200ms changed"
                       placeholder="Email" value="{{ .Email }}">
                     <span class="error" style="color:red">
                       {{with index .Errors "email"}}{{.}}{{end}}
