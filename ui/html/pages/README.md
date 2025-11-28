@@ -1,0 +1,1 @@
+- [`edit.html`](./edit.html). Examples for a `<button>` with HTTP method

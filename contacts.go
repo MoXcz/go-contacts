@@ -17,13 +17,33 @@ type Contact struct {
 	Email     string
 	Phone     int
 	Id        int
-	Errors    map[string]string
 }
 
 func newContacts() []Contact {
 	return []Contact{
 		newContactData("Pedro", "Sanchez", "pedro@gm.com", 113),
 		newContactData("Juan", "Mama", "juan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Pedro", "Sanchez", "edro@gm.com", 113),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
+		newContactData("Juan", "Mama", "ujan@gm.com", 112),
 	}
 }
 
@@ -34,7 +54,6 @@ func newContactData(firstName, lastName, email string, phone int) Contact {
 		Email:     email,
 		Phone:     phone,
 		Id:        counter,
-		Errors:    map[string]string{},
 	}
 	counter += 1
 	return c
@@ -43,7 +62,7 @@ func newContactData(firstName, lastName, email string, phone int) Contact {
 var contacts = newContacts()
 var counter = 0
 
-func getContacts(w http.ResponseWriter, r *http.Request) {
+func (app *application) getContacts(w http.ResponseWriter, r *http.Request) {
 	c := contacts
 	search := r.URL.Query().Get("q")
 	if search != "" {
@@ -65,35 +84,28 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 		c = c[pageNum*10 : (pageNum+1)*10]
 	}
 
-	data := PageData{
+	data := pageData{
 		Contacts:   c,
 		SearchTerm: search,
 		Page:       pageNum,
 	}
 
-	err = renderTemplate(w, "contacts", data)
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return
-	}
+	app.render(w, r, http.StatusOK, "contacts.html", data)
 }
 
-func createNewContactGet(w http.ResponseWriter, r *http.Request) {
-	err := renderTemplate(w, "new", Contact{Errors: map[string]string{}})
-	if err != nil {
-		fmt.Printf("Error rendering template: %v", err)
-		return
-	}
+func (app *application) createNewContactGet(w http.ResponseWriter, r *http.Request) {
+	data := pageData{Errors: map[string]string{}}
+	app.render(w, r, http.StatusOK, "new.html", data)
 }
 
-func createNewContactPost(w http.ResponseWriter, r *http.Request) {
+func (app *application) createNewContactPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Unable to parse form", http.StatusBadRequest)
 		return
 	}
 
-	contact, err := parseContactForm(w, r)
+	contact, err := app.parseContactForm(w, r)
 	if err != nil {
 		log.Println(err)
 		return
@@ -104,7 +116,7 @@ func createNewContactPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
 }
 
-func getContact(w http.ResponseWriter, r *http.Request) {
+func (app *application) getContact(w http.ResponseWriter, r *http.Request) {
 	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		log.Printf("Error parsing contact id: %v", err)
@@ -116,10 +128,10 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error finding contact: %v", err)
 		return
 	}
-	renderTemplate(w, "view", contact)
+	app.render(w, r, http.StatusOK, "view.html", pageData{Contact: contact})
 }
 
-func editContactGet(w http.ResponseWriter, r *http.Request) {
+func (app *application) editContactGet(w http.ResponseWriter, r *http.Request) {
 	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		log.Printf("Error parsing contact id: %v", err)
@@ -131,7 +143,7 @@ func editContactGet(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error finding contact: %v", err)
 		return
 	}
-	renderTemplate(w, "edit", contact)
+	app.render(w, r, http.StatusOK, "edit.html", pageData{Contact: contact})
 }
 
 func getEmailValidation(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +161,7 @@ func getEmailValidation(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(msg))
 }
 
-func editContactPost(w http.ResponseWriter, r *http.Request) {
+func (app *application) editContactPost(w http.ResponseWriter, r *http.Request) {
 	contact_id, err := strconv.Atoi(r.PathValue("contact_id"))
 	if err != nil {
 		http.Error(w, "Unable to parse contact_id", http.StatusBadRequest)
@@ -162,7 +174,7 @@ func editContactPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contact, err := parseContactForm(w, r)
+	contact, err := app.parseContactForm(w, r)
 	if err != nil {
 		log.Println(err)
 		return
@@ -186,6 +198,7 @@ func deleteContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// WARNING: does not work, fix
 	for i, contact := range contacts {
 		if contact.Id == contact_id {
 			contacts = slices.Delete(contacts, i, i+1)
@@ -195,7 +208,7 @@ func deleteContact(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
 }
 
-func parseContactForm(w http.ResponseWriter, r *http.Request) (Contact, error) {
+func (app *application) parseContactForm(w http.ResponseWriter, r *http.Request) (Contact, error) {
 	errors := map[string]string{}
 	firstName := r.FormValue("firstName")
 	if firstName == "" {
@@ -213,22 +226,16 @@ func parseContactForm(w http.ResponseWriter, r *http.Request) (Contact, error) {
 	phoneNum, err := strconv.Atoi(phone)
 	if err != nil {
 		errors["phone"] = "Invalid phone number"
-		log.Println(err)
 	}
 
 	if len(errors) != 0 {
-		err := renderTemplate(w, "new", Contact{
+		app.render(w, r, http.StatusOK, "new.html", pageData{Contact: Contact{
 			FirstName: firstName,
 			LastName:  lastName,
 			Phone:     phoneNum,
 			Email:     email,
-			Errors:    errors,
-		})
-		if err != nil {
-			fmt.Printf("Error rendering template: %v", err)
-			return Contact{}, err
-		}
-		return Contact{}, fmt.Errorf("Error parsing values in contact form")
+		}, Errors: errors})
+		return Contact{}, fmt.Errorf("errors found in the form")
 	}
 
 	return newContactData(firstName, lastName, email, phoneNum), nil

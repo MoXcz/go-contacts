@@ -4,29 +4,42 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
-type PageData struct {
-	Contacts   []Contact
-	SearchTerm string
-	Page       int
+type application struct {
+	logger *slog.Logger
+	tm     map[string]*template.Template
 }
 
 func main() {
 	listenAddr := ":3000"
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	tm, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	app := application{
+		logger: logger,
+		tm:     tm,
+	}
+
 	mux := http.NewServeMux()
 
-	fs := http.FileServer(http.Dir("./static/"))
+	fs := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	mux.HandleFunc("/", index)
-	mux.HandleFunc("GET /contacts", getContacts)
-	mux.HandleFunc("GET /contacts/new", createNewContactGet)
-	mux.HandleFunc("POST /contacts/new", createNewContactPost)
-	mux.HandleFunc("GET /contacts/{contact_id}", getContact)
-	mux.HandleFunc("GET /contacts/{contact_id}/edit", editContactGet)
-	mux.HandleFunc("POST /contacts/{contact_id}/edit", editContactPost)
+	mux.HandleFunc("GET /contacts", app.getContacts)
+	mux.HandleFunc("GET /contacts/new", app.createNewContactGet)
+	mux.HandleFunc("POST /contacts/new", app.createNewContactPost)
+	mux.HandleFunc("GET /contacts/{contact_id}", app.getContact)
+	mux.HandleFunc("GET /contacts/{contact_id}/edit", app.editContactGet)
+	mux.HandleFunc("POST /contacts/{contact_id}/edit", app.editContactPost)
 	mux.HandleFunc("GET /contacts/{contact_id}/email", getEmailValidation)
 	mux.HandleFunc("DELETE /contacts/{contact_id}", deleteContact)
 
@@ -43,37 +56,3 @@ func index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/contacts", http.StatusPermanentRedirect)
 }
 
-func add(x, y int) int { return x + y }
-func sub(x, y int) int { return x - y }
-
-func renderTemplate(w http.ResponseWriter, name string, data any) error {
-	tmpl, err := template.New("templates/layout.html").Funcs(template.FuncMap{
-		"add": add,
-		"sub": sub,
-	}).ParseFiles("templates/layout.html", fmt.Sprintf("templates/%s.html", name))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return fmt.Errorf("Error: Content template not found. %w", err)
-	}
-
-	err = tmpl.ExecuteTemplate(w, "layout", data)
-	if err != nil {
-		return fmt.Errorf("Error: Content template not executed. %w", err)
-	}
-	return nil
-}
-
-func logRequest(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			ip     = r.RemoteAddr
-			proto  = r.Proto
-			method = r.Method
-			uri    = r.URL.RequestURI()
-		)
-
-		log.Println("received request", "ip", ip, "proto", proto, "method", method, "uri", uri)
-
-		next.ServeHTTP(w, r)
-	})
-}

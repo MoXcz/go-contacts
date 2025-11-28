@@ -1,0 +1,58 @@
+{{ define "title" }}Edit Contact{{ end }}
+
+{{ define "main" }}
+    <form action="/contacts/{{ .Contact.Id }}/edit" method="post">
+        <fieldset>
+            <legend>Contact Values</legend>
+            <div class="table rows">
+                <p>
+                    <label for="firstName">First Name</label>
+                    <input name="firstName" id="firstName" type="text" placeholder="First Name"
+                           value="{{ .Contact.FirstName }}">
+                    {{with index .Errors "firstName"}}
+                    <span class="error" style="color:red">{{.}}</span>
+                    {{end}}
+                </p>
+                <p>
+                    <label for="lastName">Last Name</label>
+                    <input name="lastName" id="lastName" type="text" placeholder="Last Name"
+                           value="{{ .Contact.LastName }}">
+                    {{with index .Errors "lastName"}}
+                    <span class="error" style="color:red">{{.}}</span>
+                    {{end}}
+                </p>
+                <p>
+                    <label for="phone">Phone</label>
+                    <input name="phone" id="phone" type="text" placeholder="Phone" value="{{ .Contact.Phone }}">
+                    {{with index .Errors "phone"}}
+                    <span class="error" style="color:red">{{.}}</span>
+                    {{end}}
+                </p>
+                <p>
+                    <label for="email">Email</label>
+                    <input name="email" id="email" type="email"
+                      hx-get="/contacts/{{ .Contact.Id }}/email"
+                      hx-target="next .error"
+                      hx-trigger="change, keyup:200ms changed"
+                      placeholder="Email" value="{{ .Contact.Email }}">
+                    <span class="error" style="color:red">
+                      {{with index .Errors "email"}}{{.}}{{end}}
+                    </span>
+
+                </p>
+            </div>
+            <button>Save</button>
+        </fieldset>
+    </form>
+
+    <button hx-delete="/contacts/{{ .Contact.Id }}"
+      hx-target="body"
+      hx-push-url="true"
+      hx-confirm="Are you sure you want to delete this contact?">
+      Delete Contact
+    </button>
+
+    <p>
+        <a href="/contacts">Back</a>
+    </p>
+{{ end }}
